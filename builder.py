@@ -1,4 +1,4 @@
-import sys, os, errno, stat
+import sys, os, errno, stat, signal
 import vars, state, jwack, deps, logger
 from helpers import unlink, close_on_exec, join
 from log import log, log_e, debug, debug2, debug3, err, warn, log_cmd
@@ -222,6 +222,7 @@ class BuildJob:
             os.close(self.tmp_sout_fd)
             close_on_exec(1, False)
             if vars.VERBOSE or vars.XTRACE: log_e('* %s\n' % ' '.join(argv))
+            signal.signal(signal.SIGPIPE, signal.SIG_DFL) # python ignores SIGPIPE
             os.execvp(argv[0], argv)
         except:
             import traceback
