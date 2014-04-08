@@ -400,8 +400,16 @@ class Stamp:
             elif stat.S_ISDIR(st.st_mode):
                 self.stamp = STAMP_DIR
             else:
-                self.stamp = join('-', (st.st_ctime, st.st_mtime,
-                                        st.st_size, st.st_dev, st.st_ino))
+                # NOTE: We omit ctime and dev because it is
+                # problematic on some remote filesystems. The value in
+                # the cache right after a target is generated may not
+                # match after the cache is flushed and the server
+                # writes the changes. Due to the historical dependance
+                # on mtime (Make) most remote filesystems are much
+                # more careful with mtime.
+                self.stamp = join('-', (st.st_mode, st.st_uid,
+                                        st.st_gid, st.st_mtime,
+                                        st.st_size, st.st_ino))
             if runid:
                 self.stamp = self.stamp + '+' + str(int(runid))
 
