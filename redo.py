@@ -85,9 +85,9 @@ def set_main(arg0):
       	setproctitle(" ".join(args))
 
 
-def init(targets, redo_binaries=[]):
+def init(targets, redo_flavour, redo_binaries=[]):
     if not os.environ.get('REDO'):
-        if len(targets) == 0:
+        if not targets and redo_flavour == 'redo':
             targets.append('all')
 
         dirname = os.path.dirname(os.path.realpath(__file__))
@@ -145,7 +145,7 @@ try:
     do_init, jobs, redo_flavour, targets = read_opts()
     
     if do_init:
-        init(targets, mains.keys())
+        init(targets, redo_flavour, mains.keys())
         from log import err, debug
         import jwack
 

@@ -49,8 +49,8 @@ def _files(target, seen):
 def files():
     """Return a list of files known to redo, starting in os.getcwd()."""
     seen = {}
-    for depfile in glob.glob('*.deps.redo'):
-        for i in _files(depfile[:-10], seen):
+    for depfile in glob.glob('.redo/*.deps'):
+        for i in _files(depfile[6:-5], seen):
             yield i
 
 # FIXME: I really want to use fcntl F_SETLK, F_SETLKW, etc here.  But python
@@ -154,7 +154,7 @@ class File(object):
         assert(isinstance(self.stamp, Stamp))
 
     def __repr__(self):
-        return 'state.File(%s)' % self.name
+        return 'state.File(%s)' % ', '.join(sorted("%s=%r" % (k, v) for (k, v) in self.__dict__.items()))
 
     def _get_redodir(self, name):
         d = os.path.dirname(name)
