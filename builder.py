@@ -261,7 +261,13 @@ class BuildJob:
             
             if rv==0:
                 if st2:
-                    os.rename(self.tmpname_arg3, self.target.name)
+                    try:
+                        os.rename(self.tmpname_arg3, self.target.name)
+                    except OSError, e:
+                        err('%s: can\'t rename $3 to %r: %s\n',
+                            self.target.printable_name(), self.target.name,
+                            e.strerror)
+                        rv = 1000
                     os.unlink(self.tmpname_sout)
                 elif vars.OLD_STDOUT and st1.st_size > 0:
                     try:
@@ -270,7 +276,10 @@ class BuildJob:
                         if e.errno == errno.ENOENT:
                             unlink(self.target.name)
                         else:
-                            raise
+                            err('%s: can\'t save stdout to %r: %s\n',
+                                self.target.printable_name(), self.target.name,
+                                e.strerror)
+                            rv = 1000
                 else: # no output generated at all; that's ok
                     unlink(self.tmpname_sout)
                     unlink(self.target.name)
@@ -283,11 +292,12 @@ class BuildJob:
             if rv != 0:
                 if vars.ONLY_LOG:
                     logger.print_log(self.target)
-                err('%s: exit code %d\n', self.target.printable_name(), rv)
+                err('%s: exit code %r\n', self.target.printable_name(), rv)
             self.target.build_done(exitcode=rv)
             self.target.refresh()
 
-            self._move_extra_results(self.outdir, self.target.dirname() or ".", rv)
+            if rv == 0:
+                self._move_extra_results(self.outdir, self.target.dirname() or ".", rv)
 
             self.result[0] += rv
             self.result[1] += 1
